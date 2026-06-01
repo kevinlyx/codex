@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="生活看板" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>生活看板</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
+          },
+          boxShadow: {
+            glow: '0 0 40px rgba(168, 85, 247, .16)',
+            press: 'inset 0 2px 10px rgba(0, 0, 0, .28)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      overflow-x: hidden;
+      overscroll-behavior: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(20, 184, 166, .16), transparent 32rem),
+        radial-gradient(circle at bottom right, rgba(168, 85, 247, .16), transparent 30rem),
+        #0f172a;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    .hide-scrollbar {
+      scrollbar-width: none;
+    }
+
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .glass {
+      background: rgba(15, 23, 42, .72);
+      border: 1px solid rgba(148, 163, 184, .16);
+      box-shadow: 0 24px 70px rgba(2, 6, 23, .42);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+    }
+
+    .app-button {
+      transition: transform .12s ease, background-color .16s ease, border-color .16s ease, opacity .16s ease;
+    }
+
+    .app-button:active {
+      transform: scale(.96);
+      box-shadow: var(--tw-shadow, 0 0 #0000), inset 0 2px 10px rgba(0, 0, 0, .28);
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .modal-shell {
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .modal-hidden {
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .modal-hidden .modal-panel {
+      transform: translateY(20px) scale(.98);
+    }
+
+    .modal-panel {
+      transform: translateY(0) scale(1);
+      transition: transform .18s ease;
+    }
+
+    input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      opacity: .8;
+    }
+  </style>
+</head>
+<body class="font-sans text-slate-100 antialiased">
+  <div class="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-[calc(94px+var(--safe-bottom))] pt-[calc(18px+var(--safe-top))]">
+    <header class="mb-4 flex items-center justify-between">
+      <div>
+        <p id="todayLine" class="text-sm font-medium text-teal-200/80"></p>
+        <h1 class="mt-1 text-2xl font-bold tracking-normal text-white">生活看板</h1>
+      </div>
+      <div class="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/10 shadow-glow">
+        <svg aria-hidden="true" class="h-6 w-6 text-violet-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 3v18M3 12h18" stroke-linecap="round"/>
+          <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke-linecap="round" opacity=".45"/>
+        </svg>
+      </div>
+    </header>
+
+    <main class="flex-1">
+      <section id="calendarPage" class="page active">
+        <div class="glass rounded-[1.75rem] p-4">
+          <div class="mb-4 flex items-center justify-between">
+            <button id="prevMonthBtn" class="app-button flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-slate-100" aria-label="上一個月">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+            <div class="text-center">
+              <p id="calendarMonthLabel" class="text-xl font-bold text-white"></p>
+              <p class="text-xs font-medium text-slate-400">點日期記下生活小事</p>
+            </div>
+            <button id="nextMonthBtn" class="app-button flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-slate-100" aria-label="下一個月">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="grid grid-cols-7 gap-1.5 pb-2 text-center text-xs font-semibold text-slate-500">
+            <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+          </div>
+          <div id="calendarGrid" class="grid grid-cols-7 gap-1.5"></div>
+        </div>
+
+        <div class="mt-4 rounded-[1.5rem] border border-white/10 bg-slate-800/55 p-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-semibold text-white">近期標記</h2>
+            <span id="memoCountBadge" class="rounded-full bg-violet-500/20 px-3 py-1 text-xs font-semibold text-violet-200">0 筆</span>
+          </div>
+          <div id="recentMemos" class="mt-3 space-y-2"></div>
+        </div>
+      </section>
+
+      <section id="ledgerPage" class="page">
+        <div class="glass rounded-[1.75rem] p-4">
+          <label for="ledgerDate" class="block text-center text-xs font-semibold text-slate-400">記帳日期</label>
+          <input id="ledgerDate" type="date" class="mx-auto mt-2 block w-fit rounded-2xl border border-teal-300/20 bg-teal-300/10 px-4 py-3 text-center text-base font-bold text-teal-100 outline-none focus:border-teal-200/60" />
+
+          <div class="mt-5">
+            <p class="mb-3 text-xs font-semibold text-slate-400">快速類型</p>
+            <div id="categoryGrid" class="grid grid-cols-3 gap-2"></div>
+          </div>
+
+          <div class="mt-5 rounded-[1.35rem] border border-white/10 bg-slate-950/45 p-4">
+            <p class="text-xs font-medium text-slate-500">金額</p>
+            <div id="calcDisplay" class="mt-1 min-h-10 break-words text-right text-3xl font-semibold tracking-normal text-white">0</div>
+          </div>
+        </div>
+
+        <div class="mt-4 grid min-h-[44vh] grid-cols-4 gap-2 rounded-[1.75rem] border border-white/10 bg-slate-950/40 p-3">
+          <button data-key="C" class="calc-key app-button rounded-2xl bg-rose-500/20 text-lg font-bold text-rose-100">C</button>
+          <button data-key="back" class="calc-key app-button rounded-2xl bg-slate-700/70 text-lg font-bold text-slate-100">⌫</button>
+          <button data-key="-" class="calc-key app-button rounded-2xl bg-teal-500/20 text-2xl font-bold text-teal-100">−</button>
+          <button data-key="+" class="calc-key app-button rounded-2xl bg-teal-500/20 text-2xl font-bold text-teal-100">+</button>
+          <button data-key="7" class="calc-key app-button rounded-2xl bg-slate-700/80 text-2xl font-semibold">7</button>
+          <button data-key="8" class="calc-key app-button rounded-2xl bg-slate-700/80 text-2xl font-semibold">8</button>
+          <button data-key="9" class="calc-key app-button rounded-2xl bg-slate-700/80 text-2xl font-semibold">9</button>
+          <button data-key="=" class="calc-key app-button row-span-2 rounded-2xl bg-violet-500 text-2xl font-bold text-white shadow-glow">=</button>
+          <button data-key="4" class="calc-key app-button rounded-2xl bg-slate-700/80 text-2xl font-semibold">4</button>
+          <button data-key="5" class="calc-key app-button rounded-2xl bg-slate-700/80 text-2xl font-semibold">5</button>
+          <button data-key="6" class="calc-key app-button rounded-2xl bg-slate-700/80 text-2xl font-semibold">6</button>
+          <button data-key="1" class="calc-key app-button rounded-2xl bg-slate-700/80 text-2xl font-semibold">1</button>
+          <button data-key="2" class="calc-key app-button rounded-2xl bg-slate-700/80 text-2xl font-semibold">2</button>
+          <button data-key="3" class="calc-key app-button rounded-2xl bg-slate-700/80 text-2xl font-semibold">3</button>
+          <button id="saveLedgerBtn" class="app-button row-span-2 rounded-2xl bg-teal-400 px-2 text-sm font-black text-slate-950">確認<br>存入</button>
+          <button data-key="0" class="calc-key app-button col-span-2 rounded-2xl bg-slate-700/80 text-2xl font-semibold">0</button>
+          <button data-key="." class="calc-key app-button rounded-2xl bg-slate-700/80 text-2xl font-semibold">.</button>
+        </div>
+
+        <div class="mt-4 rounded-[1.5rem] border border-white/10 bg-slate-800/55 p-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-base font-semibold text-white">最近記帳</h2>
+            <span id="ledgerTotalBadge" class="rounded-full bg-teal-500/20 px-3 py-1 text-xs font-semibold text-teal-100">$0</span>
+          </div>
+          <div id="recentLedger" class="mt-3 space-y-2"></div>
+        </div>
+      </section>
+
+      <section id="settingsPage" class="page">
+        <div class="glass rounded-[1.75rem] p-4">
+          <h2 class="text-lg font-bold text-white">數據與管理</h2>
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <div class="rounded-[1.25rem] border border-white/10 bg-white/8 p-4">
+              <p class="text-xs font-semibold text-slate-400">行事曆標記</p>
+              <p id="settingsMemoCount" class="mt-2 text-3xl font-black text-violet-200">0</p>
+            </div>
+            <div class="rounded-[1.25rem] border border-white/10 bg-white/8 p-4">
+              <p class="text-xs font-semibold text-slate-400">記帳總筆數</p>
+              <p id="settingsLedgerCount" class="mt-2 text-3xl font-black text-teal-200">0</p>
+            </div>
+          </div>
+
+          <div class="mt-5 space-y-3">
+            <button id="exportBtn" class="app-button flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-violet-500 px-4 py-3 text-base font-bold text-white shadow-glow">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 3v12" stroke-linecap="round"/>
+                <path d="M7 10l5 5 5-5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 21h14" stroke-linecap="round"/>
+              </svg>
+              一鍵導出備份
+            </button>
+            <label for="importFile" class="app-button flex min-h-14 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-teal-300/20 bg-teal-400/15 px-4 py-3 text-base font-bold text-teal-100">
+              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 21V9" stroke-linecap="round"/>
+                <path d="M7 14l5-5 5 5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M5 3h14" stroke-linecap="round"/>
+              </svg>
+              一鍵匯入還原
+            </label>
+            <input id="importFile" type="file" accept="application/json,.json" class="hidden" />
+          </div>
+          <p class="mt-4 text-sm leading-6 text-slate-400">匯入會完整覆蓋目前手機本地資料。建議先導出一份備份，再做還原。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md px-4 pb-[calc(10px+var(--safe-bottom))]">
+    <div class="glass grid grid-cols-3 gap-2 rounded-[1.6rem] p-2">
+      <button data-tab="calendarPage" class="nav-btn app-button min-h-14 rounded-[1.15rem] bg-white/12 text-violet-100">
+        <span class="mx-auto block h-5 w-5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke-linecap="round"/></svg>
+        </span>
+        <span class="mt-1 block text-xs font-bold">行事曆</span>
+      </button>
+      <button data-tab="ledgerPage" class="nav-btn app-button min-h-14 rounded-[1.15rem] text-slate-400">
+        <span class="mx-auto block h-5 w-5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12a1 1 0 0 1 1 1v17l-3-2-3 2-3-2-3 2-2-1.3V4a1 1 0 0 1 1-1Z" stroke-linejoin="round"/><path d="M8 8h8M8 12h8M8 16h5" stroke-linecap="round"/></svg>
+        </span>
+        <span class="mt-1 block text-xs font-bold">記帳</span>
+      </button>
+      <button data-tab="settingsPage" class="nav-btn app-button min-h-14 rounded-[1.15rem] text-slate-400">
+        <span class="mx-auto block h-5 w-5">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M9 16V9M14 16V6M19 16v-4" stroke-linecap="round"/></svg>
+        </span>
+        <span class="mt-1 block text-xs font-bold">管理</span>
+      </button>
+    </div>
+  </nav>
+
+  <div id="memoModal" class="modal-shell modal-hidden fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 px-4 pb-[calc(16px+var(--safe-bottom))] pt-[calc(16px+var(--safe-top))]">
+    <div class="modal-panel glass w-full max-w-md rounded-[1.75rem] p-4">
+      <div class="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <p class="text-xs font-semibold text-violet-200">日期標記</p>
+          <h2 id="memoModalTitle" class="mt-1 text-xl font-bold text-white"></h2>
+        </div>
+        <button id="closeMemoModal" class="app-button flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-slate-200" aria-label="關閉">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <textarea id="memoText" rows="5" maxlength="300" class="w-full resize-none rounded-2xl border border-white/10 bg-slate-950/55 p-4 text-base leading-6 text-white outline-none placeholder:text-slate-500 focus:border-violet-300/50" placeholder="寫下今天的重要提醒、心情或待辦..."></textarea>
+      <div class="mt-4 grid grid-cols-2 gap-3">
+        <button id="deleteMemoBtn" class="app-button min-h-13 rounded-2xl border border-rose-300/20 bg-rose-500/10 px-4 py-3 font-bold text-rose-100">刪除</button>
+        <button id="saveMemoBtn" class="app-button min-h-13 rounded-2xl bg-violet-500 px-4 py-3 font-bold text-white shadow-glow">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="pointer-events-none fixed left-1/2 top-[calc(16px+var(--safe-top))] z-[60] hidden -translate-x-1/2 rounded-full border border-white/10 bg-slate-950/90 px-4 py-2 text-sm font-bold text-white shadow-glow"></div>
+
+  <script>
+    (() => {
+      const STORAGE_KEY = 'life-dashboard-v1';
+      const categories = ['早餐', '午餐', '晚餐', '交通', '娛樂', '生活雜支'];
+      const weekdayFormatter = new Intl.DateTimeFormat('zh-TW', { weekday: 'long' });
+      const monthFormatter = new Intl.DateTimeFormat('zh-TW', { year: 'numeric', month: 'long' });
+      const dateFormatter = new Intl.DateTimeFormat('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
+
+      const els = {
+        todayLine: document.querySelector('#todayLine'),
+        calendarGrid: document.querySelector('#calendarGrid'),
+        calendarMonthLabel: document.querySelector('#calendarMonthLabel'),
+        prevMonthBtn: document.querySelector('#prevMonthBtn'),
+        nextMonthBtn: document.querySelector('#nextMonthBtn'),
+        memoModal: document.querySelector('#memoModal'),
+        memoModalTitle: document.querySelector('#memoModalTitle'),
+        memoText: document.querySelector('#memoText'),
+        closeMemoModal: document.querySelector('#closeMemoModal'),
+        saveMemoBtn: document.querySelector('#saveMemoBtn'),
+        deleteMemoBtn: document.querySelector('#deleteMemoBtn'),
+        memoCountBadge: document.querySelector('#memoCountBadge'),
+        recentMemos: document.querySelector('#recentMemos'),
+        ledgerDate: document.querySelector('#ledgerDate'),
+        categoryGrid: document.querySelector('#categoryGrid'),
+        calcDisplay: document.querySelector('#calcDisplay'),
+        saveLedgerBtn: document.querySelector('#saveLedgerBtn'),
+        recentLedger: document.querySelector('#recentLedger'),
+        ledgerTotalBadge: document.querySelector('#ledgerTotalBadge'),
+        settingsMemoCount: document.querySelector('#settingsMemoCount'),
+        settingsLedgerCount: document.querySelector('#settingsLedgerCount'),
+        exportBtn: document.querySelector('#exportBtn'),
+        importFile: document.querySelector('#importFile'),
+        toast: document.querySelector('#toast'),
+      };
+
+      let state = loadState();
+      let viewDate = new Date();
+      let selectedMemoDate = toDateKey(new Date());
+      let selectedCategory = categories[0];
+      let calcExpression = '';
+
+      init();
+
+      function init() {
+        document.body.addEventListener('touchmove', (event) => {
+          if (event.scale !== 1) event.preventDefault();
+        }, { passive: false });
+
+        els.todayLine.textContent = `${dateFormatter.format(new Date())} ${weekdayFormatter.format(new Date())}`;
+        els.ledgerDate.value = toDateKey(new Date());
+        renderCategoryButtons();
+        renderAll();
+        bindEvents();
+        setupPwaBits();
+      }
+
+      function bindEvents() {
+        document.querySelectorAll('.nav-btn').forEach((button) => {
+          button.addEventListener('click', () => switchTab(button.dataset.tab));
+        });
+
+        els.prevMonthBtn.addEventListener('click', () => {
+          viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
+          renderCalendar();
+        });
+
+        els.nextMonthBtn.addEventListener('click', () => {
+          viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
+          renderCalendar();
+        });
+
+        els.closeMemoModal.addEventListener('click', closeMemoModal);
+        els.memoModal.addEventListener('click', (event) => {
+          if (event.target === els.memoModal) closeMemoModal();
+        });
+        els.saveMemoBtn.addEventListener('click', saveMemo);
+        els.deleteMemoBtn.addEventListener('click', deleteMemo);
+
+        document.querySelectorAll('.calc-key').forEach((button) => {
+          button.addEventListener('click', () => pressCalcKey(button.dataset.key));
+        });
+        els.saveLedgerBtn.addEventListener('click', saveLedgerEntry);
+
+        els.exportBtn.addEventListener('click', exportBackup);
+        els.importFile.addEventListener('change', importBackup);
+      }
+
+      function loadState() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+          if (saved && typeof saved === 'object') {
+            return {
+              memos: saved.memos && typeof saved.memos === 'object' ? saved.memos : {},
+              ledger: Array.isArray(saved.ledger) ? saved.ledger : [],
+            };
+          }
+        } catch (error) {
+          console.warn('Local data could not be parsed.', error);
+        }
+        return { memos: {}, ledger: [] };
+      }
+
+      function persist() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      function renderAll() {
+        renderCalendar();
+        renderRecentMemos();
+        renderLedger();
+        renderSettings();
+      }
+
+      function renderCalendar() {
+        const year = viewDate.getFullYear();
+        const month = viewDate.getMonth();
+        const todayKey = toDateKey(new Date());
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const prevDays = new Date(year, month, 0).getDate();
+        const cells = [];
+
+        els.calendarMonthLabel.textContent = monthFormatter.format(viewDate);
+        els.calendarGrid.innerHTML = '';
+
+        for (let i = firstDay - 1; i >= 0; i--) {
+          cells.push({ day: prevDays - i, muted: true, date: new Date(year, month - 1, prevDays - i) });
+        }
+        for (let day = 1; day <= daysInMonth; day++) {
+          cells.push({ day, muted: false, date: new Date(year, month, day) });
+        }
+        while (cells.length % 7 !== 0 || cells.length < 42) {
+          const day = cells.length - firstDay - daysInMonth + 1;
+          cells.push({ day, muted: true, date: new Date(year, month + 1, day) });
+        }
+
+        cells.forEach((cell) => {
+          const key = toDateKey(cell.date);
+          const hasMemo = Boolean(state.memos[key]);
+          const isToday = key === todayKey;
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = [
+            'app-button relative flex aspect-square min-h-11 flex-col items-center justify-center rounded-2xl border text-sm font-bold',
+            isToday ? 'border-teal-300/70 bg-teal-300/20 text-teal-50 shadow-glow' : 'border-white/5 bg-white/6 text-slate-100',
+            cell.muted ? 'opacity-35' : '',
+          ].join(' ');
+          button.innerHTML = `<span>${cell.day}</span>${hasMemo ? '<span class="absolute bottom-2 h-1.5 w-1.5 rounded-full bg-violet-400"></span>' : ''}`;
+          button.addEventListener('click', () => openMemoModal(key));
+          els.calendarGrid.appendChild(button);
+        });
+      }
+
+      function openMemoModal(dateKey) {
+        selectedMemoDate = dateKey;
+        els.memoModalTitle.textContent = dateKey;
+        els.memoText.value = state.memos[dateKey] || '';
+        els.memoModal.classList.remove('modal-hidden');
+        setTimeout(() => els.memoText.focus(), 120);
+      }
+
+      function closeMemoModal() {
+        els.memoModal.classList.add('modal-hidden');
+        els.memoText.blur();
+      }
+
+      function saveMemo() {
+        const text = els.memoText.value.trim();
+        if (text) {
+          state.memos[selectedMemoDate] = text;
+          showToast('已儲存日期標記');
+        } else {
+          delete state.memos[selectedMemoDate];
+          showToast('已清空日期標記');
+        }
+        persist();
+        closeMemoModal();
+        renderAll();
+      }
+
+      function deleteMemo() {
+        delete state.memos[selectedMemoDate];
+        persist();
+        closeMemoModal();
+        renderAll();
+        showToast('標記已刪除');
+      }
+
+      function renderRecentMemos() {
+        const entries = Object.entries(state.memos)
+          .filter(([, text]) => text)
+          .sort(([a], [b]) => b.localeCompare(a))
+          .slice(0, 3);
+
+        els.memoCountBadge.textContent = `${Object.keys(state.memos).filter((key) => state.memos[key]).length} 筆`;
+        els.recentMemos.innerHTML = entries.length
+          ? entries.map(([date, text]) => `
+            <button class="app-button w-full rounded-2xl border border-white/10 bg-white/6 p-3 text-left" data-memo-date="${date}">
+              <span class="block text-xs font-bold text-violet-200">${date}</span>
+              <span class="mt-1 line-clamp-2 block text-sm leading-5 text-slate-200">${escapeHtml(text)}</span>
+            </button>
+          `).join('')
+          : '<p class="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-slate-500">還沒有標記，點日曆上的日期開始。</p>';
+
+        els.recentMemos.querySelectorAll('[data-memo-date]').forEach((button) => {
+          button.addEventListener('click', () => openMemoModal(button.dataset.memoDate));
+        });
+      }
+
+      function renderCategoryButtons() {
+        els.categoryGrid.innerHTML = categories.map((category) => `
+          <button type="button" data-category="${category}" class="category-btn app-button min-h-12 rounded-2xl border px-2 text-sm font-bold"></button>
+        `).join('');
+
+        els.categoryGrid.querySelectorAll('.category-btn').forEach((button) => {
+          button.textContent = button.dataset.category;
+          button.addEventListener('click', () => {
+            selectedCategory = button.dataset.category;
+            updateCategoryButtons();
+          });
+        });
+        updateCategoryButtons();
+      }
+
+      function updateCategoryButtons() {
+        els.categoryGrid.querySelectorAll('.category-btn').forEach((button) => {
+          const active = button.dataset.category === selectedCategory;
+          button.className = [
+            'category-btn app-button min-h-12 rounded-2xl border px-2 text-sm font-bold',
+            active ? 'border-violet-300/50 bg-violet-500 text-white shadow-glow' : 'border-white/10 bg-white/8 text-slate-300',
+          ].join(' ');
+        });
+      }
+
+      function pressCalcKey(key) {
+        if (key === 'C') {
+          calcExpression = '';
+        } else if (key === 'back') {
+          calcExpression = calcExpression.slice(0, -1);
+        } else if (key === '=') {
+          const total = evaluateExpression(calcExpression);
+          calcExpression = total > 0 ? trimNumber(total) : '';
+        } else if (key === '+' || key === '-') {
+          if (!calcExpression && key === '-') return;
+          calcExpression = calcExpression.replace(/[+\-]+$/, '') + key;
+        } else if (key === '.') {
+          const current = calcExpression.split(/[+\-]/).pop();
+          if (!current.includes('.')) calcExpression += key;
+        } else {
+          calcExpression += key;
+        }
+        updateCalcDisplay();
+      }
+
+      function updateCalcDisplay() {
+        els.calcDisplay.textContent = calcExpression || '0';
+      }
+
+      function evaluateExpression(expression) {
+        const clean = expression.replace(/[^0-9+\-.]/g, '').replace(/[+\-]+$/, '');
+        if (!clean) return 0;
+        const parts = clean.match(/[+\-]?[^+\-]+/g) || [];
+        return parts.reduce((sum, part) => sum + Number(part || 0), 0);
+      }
+
+      function saveLedgerEntry() {
+        const amount = evaluateExpression(calcExpression);
+        if (!amount || amount <= 0) {
+          showToast('請先輸入有效金額');
+          return;
+        }
+
+        state.ledger.unshift({
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+          date: els.ledgerDate.value || toDateKey(new Date()),
+          category: selectedCategory,
+          amount: Math.round(amount * 100) / 100,
+          expression: calcExpression,
+          createdAt: new Date().toISOString(),
+        });
+        calcExpression = '';
+        updateCalcDisplay();
+        persist();
+        renderLedger();
+        renderSettings();
+        showToast('金額已存入');
+      }
+
+      function renderLedger() {
+        const total = state.ledger.reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
+        const recent = state.ledger.slice(0, 5);
+        els.ledgerTotalBadge.textContent = `$${formatMoney(total)}`;
+        els.recentLedger.innerHTML = recent.length
+          ? recent.map((entry) => `
+            <div class="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/6 p-3">
+              <div class="min-w-0">
+                <p class="truncate text-sm font-bold text-white">${escapeHtml(entry.category)}</p>
+                <p class="mt-1 text-xs text-slate-500">${escapeHtml(entry.date)}</p>
+              </div>
+              <p class="shrink-0 text-base font-black text-teal-100">$${formatMoney(entry.amount)}</p>
+            </div>
+          `).join('')
+          : '<p class="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-slate-500">還沒有記帳資料。</p>';
+      }
+
+      function renderSettings() {
+        els.settingsMemoCount.textContent = Object.keys(state.memos).filter((key) => state.memos[key]).length;
+        els.settingsLedgerCount.textContent = state.ledger.length;
+      }
+
+      function exportBackup() {
+        const payload = {
+          app: 'life-dashboard',
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          data: state,
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'my_life_backup.json';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        showToast('備份檔已建立');
+      }
+
+      function importBackup(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(reader.result);
+            const data = parsed.data || parsed;
+            if (!data || typeof data !== 'object' || !data.memos || !Array.isArray(data.ledger)) {
+              throw new Error('Invalid backup shape');
+            }
+            state = {
+              memos: data.memos && typeof data.memos === 'object' ? data.memos : {},
+              ledger: data.ledger,
+            };
+            persist();
+            renderAll();
+            showToast('匯入完成');
+          } catch (error) {
+            console.error(error);
+            showToast('匯入失敗，請確認 JSON 檔');
+          } finally {
+            event.target.value = '';
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function switchTab(tabId) {
+        document.querySelectorAll('.page').forEach((page) => {
+          page.classList.toggle('active', page.id === tabId);
+        });
+        document.querySelectorAll('.nav-btn').forEach((button) => {
+          const active = button.dataset.tab === tabId;
+          button.className = [
+            'nav-btn app-button min-h-14 rounded-[1.15rem]',
+            active ? 'bg-white/12 text-violet-100' : 'text-slate-400',
+          ].join(' ');
+        });
+      }
+
+      function setupPwaBits() {
+        const manifest = {
+          name: '生活看板',
+          short_name: '生活看板',
+          start_url: '.',
+          scope: '.',
+          display: 'standalone',
+          background_color: '#0f172a',
+          theme_color: '#0f172a',
+          icons: [
+            { src: makeIconDataUrl(192), sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+            { src: makeIconDataUrl(512), sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' },
+          ],
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = manifestUrl;
+        document.head.appendChild(manifestLink);
+
+        const appleIcon = document.createElement('link');
+        appleIcon.rel = 'apple-touch-icon';
+        appleIcon.href = makeIconDataUrl(180);
+        document.head.appendChild(appleIcon);
+
+        if ('serviceWorker' in navigator) {
+          const swCode = `
+            const CACHE = 'life-dashboard-shell-v1';
+            self.addEventListener('install', event => {
+              event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['./'])));
+              self.skipWaiting();
+            });
+            self.addEventListener('activate', event => {
+              event.waitUntil(self.clients.claim());
+            });
+            self.addEventListener('fetch', event => {
+              event.respondWith(
+                caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+                  const clone = response.clone();
+                  caches.open(CACHE).then(cache => cache.put(event.request, clone)).catch(() => {});
+                  return response;
+                }).catch(() => caches.match('./')))
+              );
+            });
+          `;
+          const swUrl = URL.createObjectURL(new Blob([swCode], { type: 'text/javascript' }));
+          navigator.serviceWorker.register(swUrl).catch(() => {});
+        }
+      }
+
+      function makeIconDataUrl(size) {
+        const svg = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 512 512">
+            <rect width="512" height="512" rx="112" fill="#0f172a"/>
+            <circle cx="168" cy="170" r="58" fill="#14b8a6"/>
+            <rect x="224" y="112" width="152" height="116" rx="34" fill="#8b5cf6"/>
+            <rect x="116" y="278" width="280" height="96" rx="34" fill="#e2e8f0"/>
+            <circle cx="168" cy="326" r="18" fill="#8b5cf6"/>
+            <circle cx="230" cy="326" r="18" fill="#14b8a6"/>
+          </svg>
+        `;
+        return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
+      }
+
+      function toDateKey(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      function trimNumber(value) {
+        return String(Math.round(value * 100) / 100);
+      }
+
+      function formatMoney(value) {
+        return Number(value || 0).toLocaleString('zh-TW', {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 2,
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+      }
+
+      let toastTimer;
+      function showToast(message) {
+        clearTimeout(toastTimer);
+        els.toast.textContent = message;
+        els.toast.classList.remove('hidden');
+        toastTimer = setTimeout(() => els.toast.classList.add('hidden'), 1800);
+      }
+    })();
+  </script>
+</body>
+</html>
