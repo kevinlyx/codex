@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0f172a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -19,8 +19,8 @@
             sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
           },
           boxShadow: {
-            glow: '0 0 40px rgba(168, 85, 247, .16)',
-            press: 'inset 0 2px 10px rgba(0, 0, 0, .28)',
+            glow: '0 0 42px rgba(168, 85, 247, .17)',
+            teal: '0 0 34px rgba(45, 212, 191, .13)',
           },
         },
       },
@@ -34,21 +34,25 @@
     }
 
     * {
+      box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
     }
 
-    html,
-    body {
+    html {
       min-height: 100%;
       overflow-x: hidden;
-      overscroll-behavior: none;
-      touch-action: manipulation;
+      overflow-y: auto;
+      background: #0f172a;
     }
 
     body {
+      min-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      touch-action: pan-y manipulation;
       background:
-        radial-gradient(circle at top left, rgba(20, 184, 166, .16), transparent 32rem),
-        radial-gradient(circle at bottom right, rgba(168, 85, 247, .16), transparent 30rem),
+        radial-gradient(circle at top left, rgba(20, 184, 166, .18), transparent 30rem),
+        radial-gradient(circle at bottom right, rgba(168, 85, 247, .17), transparent 32rem),
         #0f172a;
     }
 
@@ -58,7 +62,8 @@
       font: inherit;
     }
 
-    button {
+    button,
+    label {
       user-select: none;
       -webkit-user-select: none;
     }
@@ -72,7 +77,7 @@
     }
 
     .glass {
-      background: rgba(15, 23, 42, .72);
+      background: rgba(15, 23, 42, .75);
       border: 1px solid rgba(148, 163, 184, .16);
       box-shadow: 0 24px 70px rgba(2, 6, 23, .42);
       backdrop-filter: blur(22px);
@@ -85,7 +90,7 @@
 
     .app-button:active {
       transform: scale(.96);
-      box-shadow: var(--tw-shadow, 0 0 #0000), inset 0 2px 10px rgba(0, 0, 0, .28);
+      box-shadow: inset 0 2px 12px rgba(0, 0, 0, .3);
     }
 
     .page {
@@ -97,7 +102,7 @@
     }
 
     .modal-shell {
-      transition: opacity .18s ease, transform .18s ease;
+      transition: opacity .18s ease;
     }
 
     .modal-hidden {
@@ -105,32 +110,31 @@
       opacity: 0;
     }
 
-    .modal-hidden .modal-panel {
-      transform: translateY(20px) scale(.98);
-    }
-
     .modal-panel {
       transform: translateY(0) scale(1);
       transition: transform .18s ease;
     }
 
+    .modal-hidden .modal-panel {
+      transform: translateY(18px) scale(.98);
+    }
+
     input[type="date"]::-webkit-calendar-picker-indicator {
       filter: invert(1);
-      opacity: .8;
+      opacity: .85;
     }
   </style>
 </head>
 <body class="font-sans text-slate-100 antialiased">
-  <div class="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-[calc(94px+var(--safe-bottom))] pt-[calc(18px+var(--safe-top))]">
+  <div class="mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pb-[calc(96px+var(--safe-bottom))] pt-[calc(18px+var(--safe-top))]">
     <header class="mb-4 flex items-center justify-between">
-      <div>
+      <div class="min-w-0">
         <p id="todayLine" class="text-sm font-medium text-teal-200/80"></p>
         <h1 class="mt-1 text-2xl font-bold tracking-normal text-white">生活看板</h1>
       </div>
-      <div class="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/10 shadow-glow">
+      <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/10 shadow-glow">
         <svg aria-hidden="true" class="h-6 w-6 text-violet-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M12 3v18M3 12h18" stroke-linecap="round"/>
-          <path d="M6.5 6.5l11 11M17.5 6.5l-11 11" stroke-linecap="round" opacity=".45"/>
+          <path d="M5 12.5 10 17 20 6" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
     </header>
@@ -138,21 +142,28 @@
     <main class="flex-1">
       <section id="calendarPage" class="page active">
         <div class="glass rounded-[1.75rem] p-4">
-          <div class="mb-4 flex items-center justify-between">
+          <div class="mb-4 flex items-center justify-between gap-3">
             <button id="prevMonthBtn" class="app-button flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-slate-100" aria-label="上一個月">
               <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                 <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </button>
-            <div class="text-center">
+            <div class="min-w-0 text-center">
               <p id="calendarMonthLabel" class="text-xl font-bold text-white"></p>
-              <p class="text-xs font-medium text-slate-400">點日期記下生活小事</p>
+              <p class="text-xs font-medium text-slate-400">點日期選標籤，右上管理標籤</p>
             </div>
-            <button id="nextMonthBtn" class="app-button flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-slate-100" aria-label="下一個月">
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
+            <div class="flex gap-2">
+              <button id="manageTagsBtn" class="app-button flex h-11 w-11 items-center justify-center rounded-2xl border border-violet-300/20 bg-violet-500/20 text-violet-100" aria-label="管理標籤">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25">
+                  <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <button id="nextMonthBtn" class="app-button flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/10 text-slate-100" aria-label="下一個月">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
           </div>
           <div class="grid grid-cols-7 gap-1.5 pb-2 text-center text-xs font-semibold text-slate-500">
             <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
@@ -162,25 +173,48 @@
 
         <div class="mt-4 rounded-[1.5rem] border border-white/10 bg-slate-800/55 p-4">
           <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-white">近期標記</h2>
-            <span id="memoCountBadge" class="rounded-full bg-violet-500/20 px-3 py-1 text-xs font-semibold text-violet-200">0 筆</span>
+            <h2 class="text-base font-semibold text-white">近期標籤</h2>
+            <span id="dateTagCountBadge" class="rounded-full bg-violet-500/20 px-3 py-1 text-xs font-semibold text-violet-200">0 天</span>
           </div>
-          <div id="recentMemos" class="mt-3 space-y-2"></div>
+          <div id="recentDateTags" class="mt-3 space-y-2"></div>
         </div>
       </section>
 
       <section id="ledgerPage" class="page">
+        <button id="openStatsBtn" class="app-button mb-4 flex min-h-16 w-full items-center justify-between rounded-[1.5rem] border border-teal-300/20 bg-teal-400/12 px-4 py-3 text-left shadow-teal">
+          <div>
+            <p class="text-xs font-semibold text-teal-200/80">消費統計</p>
+            <p id="statsPreview" class="mt-1 text-sm font-bold text-white">點此查看年、月、日平均</p>
+          </div>
+          <svg class="h-5 w-5 shrink-0 text-teal-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <path d="M9 18l6-6-6-6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
         <div class="glass rounded-[1.75rem] p-4">
-          <label for="ledgerDate" class="block text-center text-xs font-semibold text-slate-400">記帳日期</label>
+          <div class="grid grid-cols-2 gap-2 rounded-2xl bg-slate-950/45 p-1">
+            <button id="expenseBtn" class="money-mode app-button min-h-11 rounded-[1rem] text-sm font-black" data-mode="expense">支出</button>
+            <button id="incomeBtn" class="money-mode app-button min-h-11 rounded-[1rem] text-sm font-black" data-mode="income">收入</button>
+          </div>
+
+          <label for="ledgerDate" class="mt-4 block text-center text-xs font-semibold text-slate-400">記帳日期</label>
           <input id="ledgerDate" type="date" class="mx-auto mt-2 block w-fit rounded-2xl border border-teal-300/20 bg-teal-300/10 px-4 py-3 text-center text-base font-bold text-teal-100 outline-none focus:border-teal-200/60" />
 
+          <input id="ledgerName" type="text" maxlength="28" class="mt-4 w-full rounded-2xl border border-white/10 bg-slate-950/45 px-4 py-3 text-base font-semibold text-white outline-none placeholder:text-slate-500 focus:border-violet-300/50" placeholder="名稱，例如：咖啡、薪水、捷運" />
+
           <div class="mt-5">
-            <p class="mb-3 text-xs font-semibold text-slate-400">快速類型</p>
+            <div class="mb-3 flex items-center justify-between">
+              <p class="text-xs font-semibold text-slate-400">類型</p>
+              <button id="manageTypesBtn" class="app-button rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-bold text-slate-200">編輯類型</button>
+            </div>
             <div id="categoryGrid" class="grid grid-cols-3 gap-2"></div>
           </div>
 
           <div class="mt-5 rounded-[1.35rem] border border-white/10 bg-slate-950/45 p-4">
-            <p class="text-xs font-medium text-slate-500">金額</p>
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-xs font-medium text-slate-500">金額</p>
+              <p id="editHint" class="hidden text-xs font-bold text-violet-200">編輯中</p>
+            </div>
             <div id="calcDisplay" class="mt-1 min-h-10 break-words text-right text-3xl font-semibold tracking-normal text-white">0</div>
           </div>
         </div>
@@ -207,10 +241,10 @@
 
         <div class="mt-4 rounded-[1.5rem] border border-white/10 bg-slate-800/55 p-4">
           <div class="flex items-center justify-between">
-            <h2 class="text-base font-semibold text-white">最近記帳</h2>
+            <h2 class="text-base font-semibold text-white">記帳資料</h2>
             <span id="ledgerTotalBadge" class="rounded-full bg-teal-500/20 px-3 py-1 text-xs font-semibold text-teal-100">$0</span>
           </div>
-          <div id="recentLedger" class="mt-3 space-y-2"></div>
+          <div id="ledgerList" class="mt-3 space-y-2"></div>
         </div>
       </section>
 
@@ -218,11 +252,11 @@
         <div class="glass rounded-[1.75rem] p-4">
           <h2 class="text-lg font-bold text-white">數據與管理</h2>
           <div class="mt-4 grid grid-cols-2 gap-3">
-            <div class="rounded-[1.25rem] border border-white/10 bg-white/8 p-4">
-              <p class="text-xs font-semibold text-slate-400">行事曆標記</p>
-              <p id="settingsMemoCount" class="mt-2 text-3xl font-black text-violet-200">0</p>
+            <div class="rounded-[1.25rem] border border-white/10 bg-white/10 p-4">
+              <p class="text-xs font-semibold text-slate-400">有標籤日期</p>
+              <p id="settingsDateTagCount" class="mt-2 text-3xl font-black text-violet-200">0</p>
             </div>
-            <div class="rounded-[1.25rem] border border-white/10 bg-white/8 p-4">
+            <div class="rounded-[1.25rem] border border-white/10 bg-white/10 p-4">
               <p class="text-xs font-semibold text-slate-400">記帳總筆數</p>
               <p id="settingsLedgerCount" class="mt-2 text-3xl font-black text-teal-200">0</p>
             </div>
@@ -255,7 +289,7 @@
 
   <nav class="fixed inset-x-0 bottom-0 z-40 mx-auto max-w-md px-4 pb-[calc(10px+var(--safe-bottom))]">
     <div class="glass grid grid-cols-3 gap-2 rounded-[1.6rem] p-2">
-      <button data-tab="calendarPage" class="nav-btn app-button min-h-14 rounded-[1.15rem] bg-white/12 text-violet-100">
+      <button data-tab="calendarPage" class="nav-btn app-button min-h-14 rounded-[1.15rem] bg-white/10 text-violet-100">
         <span class="mx-auto block h-5 w-5">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" stroke-linecap="round"/></svg>
         </span>
@@ -276,24 +310,82 @@
     </div>
   </nav>
 
-  <div id="memoModal" class="modal-shell modal-hidden fixed inset-0 z-50 flex items-end justify-center bg-slate-950/70 px-4 pb-[calc(16px+var(--safe-bottom))] pt-[calc(16px+var(--safe-top))]">
+  <div id="dateTagModal" class="modal-shell modal-hidden fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-slate-950/70 px-4 pb-[calc(16px+var(--safe-bottom))] pt-[calc(16px+var(--safe-top))]">
     <div class="modal-panel glass w-full max-w-md rounded-[1.75rem] p-4">
       <div class="mb-4 flex items-start justify-between gap-3">
         <div>
-          <p class="text-xs font-semibold text-violet-200">日期標記</p>
-          <h2 id="memoModalTitle" class="mt-1 text-xl font-bold text-white"></h2>
+          <p class="text-xs font-semibold text-violet-200">日期內容</p>
+          <h2 id="dateTagTitle" class="mt-1 text-xl font-bold text-white"></h2>
         </div>
-        <button id="closeMemoModal" class="app-button flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-slate-200" aria-label="關閉">
+        <button data-close-modal="dateTagModal" class="app-button flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-slate-200" aria-label="關閉">
           <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>
           </svg>
         </button>
       </div>
-      <textarea id="memoText" rows="5" maxlength="300" class="w-full resize-none rounded-2xl border border-white/10 bg-slate-950/55 p-4 text-base leading-6 text-white outline-none placeholder:text-slate-500 focus:border-violet-300/50" placeholder="寫下今天的重要提醒、心情或待辦..."></textarea>
-      <div class="mt-4 grid grid-cols-2 gap-3">
-        <button id="deleteMemoBtn" class="app-button min-h-13 rounded-2xl border border-rose-300/20 bg-rose-500/10 px-4 py-3 font-bold text-rose-100">刪除</button>
-        <button id="saveMemoBtn" class="app-button min-h-13 rounded-2xl bg-violet-500 px-4 py-3 font-bold text-white shadow-glow">儲存</button>
+      <div id="dateTagPicker" class="grid grid-cols-2 gap-2"></div>
+      <textarea id="dateNote" rows="3" maxlength="220" class="mt-3 w-full resize-none rounded-2xl border border-white/10 bg-slate-950/55 p-4 text-base leading-6 text-white outline-none placeholder:text-slate-500 focus:border-violet-300/50" placeholder="可加一點備註..."></textarea>
+      <button id="saveDateTagsBtn" class="app-button mt-4 min-h-13 w-full rounded-2xl bg-violet-500 px-4 py-3 font-bold text-white shadow-glow">儲存日期內容</button>
+    </div>
+  </div>
+
+  <div id="tagManagerModal" class="modal-shell modal-hidden fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-slate-950/70 px-4 pb-[calc(16px+var(--safe-bottom))] pt-[calc(16px+var(--safe-top))]">
+    <div class="modal-panel glass w-full max-w-md rounded-[1.75rem] p-4">
+      <div class="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <p class="text-xs font-semibold text-violet-200">行事曆</p>
+          <h2 class="mt-1 text-xl font-bold text-white">管理標籤</h2>
+        </div>
+        <button data-close-modal="tagManagerModal" class="app-button flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-slate-200" aria-label="關閉">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
+      <div class="grid grid-cols-[72px_1fr] gap-2">
+        <select id="newTagIcon" class="h-12 rounded-2xl border border-white/10 bg-slate-950/55 px-3 text-lg outline-none focus:border-violet-300/50"></select>
+        <input id="newTagName" type="text" maxlength="12" class="h-12 rounded-2xl border border-white/10 bg-slate-950/55 px-4 text-base font-semibold text-white outline-none placeholder:text-slate-500 focus:border-violet-300/50" placeholder="標籤名稱" />
+      </div>
+      <button id="addTagBtn" class="app-button mt-3 min-h-12 w-full rounded-2xl bg-violet-500 font-bold text-white">新增標籤</button>
+      <div id="tagManagerList" class="mt-4 space-y-2"></div>
+    </div>
+  </div>
+
+  <div id="typeManagerModal" class="modal-shell modal-hidden fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-slate-950/70 px-4 pb-[calc(16px+var(--safe-bottom))] pt-[calc(16px+var(--safe-top))]">
+    <div class="modal-panel glass w-full max-w-md rounded-[1.75rem] p-4">
+      <div class="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <p class="text-xs font-semibold text-teal-200">記帳</p>
+          <h2 class="mt-1 text-xl font-bold text-white">編輯類型</h2>
+        </div>
+        <button data-close-modal="typeManagerModal" class="app-button flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-slate-200" aria-label="關閉">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="flex gap-2">
+        <input id="newTypeName" type="text" maxlength="12" class="h-12 min-w-0 flex-1 rounded-2xl border border-white/10 bg-slate-950/55 px-4 text-base font-semibold text-white outline-none placeholder:text-slate-500 focus:border-teal-300/50" placeholder="新增類型" />
+        <button id="addTypeBtn" class="app-button h-12 rounded-2xl bg-teal-400 px-4 font-black text-slate-950">新增</button>
+      </div>
+      <div id="typeManagerList" class="mt-4 space-y-2"></div>
+    </div>
+  </div>
+
+  <div id="statsModal" class="modal-shell modal-hidden fixed inset-0 z-50 flex items-end justify-center overflow-y-auto bg-slate-950/70 px-4 pb-[calc(16px+var(--safe-bottom))] pt-[calc(16px+var(--safe-top))]">
+    <div class="modal-panel glass w-full max-w-md rounded-[1.75rem] p-4">
+      <div class="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <p class="text-xs font-semibold text-teal-200">記帳統計</p>
+          <h2 class="mt-1 text-xl font-bold text-white">平均與總覽</h2>
+        </div>
+        <button data-close-modal="statsModal" class="app-button flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-slate-200" aria-label="關閉">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div id="statsContent" class="space-y-3"></div>
     </div>
   </div>
 
@@ -301,8 +393,15 @@
 
   <script>
     (() => {
-      const STORAGE_KEY = 'life-dashboard-v1';
-      const categories = ['早餐', '午餐', '晚餐', '交通', '娛樂', '生活雜支'];
+      const STORAGE_KEY = 'life-dashboard-v2';
+      const OLD_STORAGE_KEY = 'life-dashboard-v1';
+      const tagIcons = ['💊', '🏃', '✈️', '📌', '📚', '🧘', '🛒', '🎂', '💼', '❤️', '⭐', '☕'];
+      const defaultTags = [
+        { id: 'medicine', name: '吃藥', icon: '💊', color: 'violet' },
+        { id: 'exercise', name: '運動', icon: '🏃', color: 'teal' },
+        { id: 'travel', name: '旅遊', icon: '✈️', color: 'sky' },
+      ];
+      const defaultLedgerTypes = ['早餐', '午餐', '晚餐', '交通', '娛樂', '生活雜支', '薪資', '獎金'];
       const weekdayFormatter = new Intl.DateTimeFormat('zh-TW', { weekday: 'long' });
       const monthFormatter = new Intl.DateTimeFormat('zh-TW', { year: 'numeric', month: 'long' });
       const dateFormatter = new Intl.DateTimeFormat('zh-TW', { year: 'numeric', month: '2-digit', day: '2-digit' });
@@ -313,21 +412,37 @@
         calendarMonthLabel: document.querySelector('#calendarMonthLabel'),
         prevMonthBtn: document.querySelector('#prevMonthBtn'),
         nextMonthBtn: document.querySelector('#nextMonthBtn'),
-        memoModal: document.querySelector('#memoModal'),
-        memoModalTitle: document.querySelector('#memoModalTitle'),
-        memoText: document.querySelector('#memoText'),
-        closeMemoModal: document.querySelector('#closeMemoModal'),
-        saveMemoBtn: document.querySelector('#saveMemoBtn'),
-        deleteMemoBtn: document.querySelector('#deleteMemoBtn'),
-        memoCountBadge: document.querySelector('#memoCountBadge'),
-        recentMemos: document.querySelector('#recentMemos'),
+        manageTagsBtn: document.querySelector('#manageTagsBtn'),
+        dateTagModal: document.querySelector('#dateTagModal'),
+        dateTagTitle: document.querySelector('#dateTagTitle'),
+        dateTagPicker: document.querySelector('#dateTagPicker'),
+        dateNote: document.querySelector('#dateNote'),
+        saveDateTagsBtn: document.querySelector('#saveDateTagsBtn'),
+        tagManagerModal: document.querySelector('#tagManagerModal'),
+        newTagIcon: document.querySelector('#newTagIcon'),
+        newTagName: document.querySelector('#newTagName'),
+        addTagBtn: document.querySelector('#addTagBtn'),
+        tagManagerList: document.querySelector('#tagManagerList'),
+        dateTagCountBadge: document.querySelector('#dateTagCountBadge'),
+        recentDateTags: document.querySelector('#recentDateTags'),
+        openStatsBtn: document.querySelector('#openStatsBtn'),
+        statsPreview: document.querySelector('#statsPreview'),
+        statsModal: document.querySelector('#statsModal'),
+        statsContent: document.querySelector('#statsContent'),
         ledgerDate: document.querySelector('#ledgerDate'),
+        ledgerName: document.querySelector('#ledgerName'),
         categoryGrid: document.querySelector('#categoryGrid'),
+        manageTypesBtn: document.querySelector('#manageTypesBtn'),
+        typeManagerModal: document.querySelector('#typeManagerModal'),
+        newTypeName: document.querySelector('#newTypeName'),
+        addTypeBtn: document.querySelector('#addTypeBtn'),
+        typeManagerList: document.querySelector('#typeManagerList'),
         calcDisplay: document.querySelector('#calcDisplay'),
         saveLedgerBtn: document.querySelector('#saveLedgerBtn'),
-        recentLedger: document.querySelector('#recentLedger'),
+        editHint: document.querySelector('#editHint'),
+        ledgerList: document.querySelector('#ledgerList'),
         ledgerTotalBadge: document.querySelector('#ledgerTotalBadge'),
-        settingsMemoCount: document.querySelector('#settingsMemoCount'),
+        settingsDateTagCount: document.querySelector('#settingsDateTagCount'),
         settingsLedgerCount: document.querySelector('#settingsLedgerCount'),
         exportBtn: document.querySelector('#exportBtn'),
         importFile: document.querySelector('#importFile'),
@@ -336,20 +451,19 @@
 
       let state = loadState();
       let viewDate = new Date();
-      let selectedMemoDate = toDateKey(new Date());
-      let selectedCategory = categories[0];
+      let selectedDateKey = toDateKey(new Date());
+      let draftDateTags = new Set();
+      let selectedType = state.ledgerTypes[0] || defaultLedgerTypes[0];
+      let moneyMode = 'expense';
       let calcExpression = '';
+      let editingLedgerId = null;
 
       init();
 
       function init() {
-        document.body.addEventListener('touchmove', (event) => {
-          if (event.scale !== 1) event.preventDefault();
-        }, { passive: false });
-
         els.todayLine.textContent = `${dateFormatter.format(new Date())} ${weekdayFormatter.format(new Date())}`;
         els.ledgerDate.value = toDateKey(new Date());
-        renderCategoryButtons();
+        els.newTagIcon.innerHTML = tagIcons.map((icon) => `<option value="${icon}">${icon}</option>`).join('');
         renderAll();
         bindEvents();
         setupPwaBits();
@@ -359,46 +473,102 @@
         document.querySelectorAll('.nav-btn').forEach((button) => {
           button.addEventListener('click', () => switchTab(button.dataset.tab));
         });
+        document.querySelectorAll('[data-close-modal]').forEach((button) => {
+          button.addEventListener('click', () => closeModal(button.dataset.closeModal));
+        });
+        document.querySelectorAll('.modal-shell').forEach((modal) => {
+          modal.addEventListener('click', (event) => {
+            if (event.target === modal) closeModal(modal.id);
+          });
+        });
 
         els.prevMonthBtn.addEventListener('click', () => {
           viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1);
           renderCalendar();
         });
-
         els.nextMonthBtn.addEventListener('click', () => {
           viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1);
           renderCalendar();
         });
-
-        els.closeMemoModal.addEventListener('click', closeMemoModal);
-        els.memoModal.addEventListener('click', (event) => {
-          if (event.target === els.memoModal) closeMemoModal();
+        els.manageTagsBtn.addEventListener('click', () => {
+          renderTagManager();
+          openModal('tagManagerModal');
         });
-        els.saveMemoBtn.addEventListener('click', saveMemo);
-        els.deleteMemoBtn.addEventListener('click', deleteMemo);
+        els.saveDateTagsBtn.addEventListener('click', saveDateTags);
+        els.addTagBtn.addEventListener('click', addCalendarTag);
 
+        document.querySelectorAll('.money-mode').forEach((button) => {
+          button.addEventListener('click', () => {
+            moneyMode = button.dataset.mode;
+            renderMoneyMode();
+          });
+        });
+        els.manageTypesBtn.addEventListener('click', () => {
+          renderTypeManager();
+          openModal('typeManagerModal');
+        });
+        els.addTypeBtn.addEventListener('click', addLedgerType);
         document.querySelectorAll('.calc-key').forEach((button) => {
           button.addEventListener('click', () => pressCalcKey(button.dataset.key));
         });
         els.saveLedgerBtn.addEventListener('click', saveLedgerEntry);
+        els.openStatsBtn.addEventListener('click', () => {
+          renderStats();
+          openModal('statsModal');
+        });
 
         els.exportBtn.addEventListener('click', exportBackup);
         els.importFile.addEventListener('change', importBackup);
       }
 
       function loadState() {
+        const fresh = readJson(STORAGE_KEY);
+        if (fresh) return normalizeState(fresh);
+
+        const old = readJson(OLD_STORAGE_KEY);
+        if (old) {
+          const migrated = normalizeState(old);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+          return migrated;
+        }
+
+        return normalizeState({});
+      }
+
+      function normalizeState(raw) {
+        const data = raw.data || raw;
+        const memos = data.memos && typeof data.memos === 'object' ? data.memos : {};
+        const dateTags = data.dateTags && typeof data.dateTags === 'object' ? data.dateTags : {};
+        Object.entries(memos).forEach(([date, text]) => {
+          if (!dateTags[date] && text) dateTags[date] = { tagIds: ['note'], note: String(text) };
+        });
+
+        const tags = Array.isArray(data.calendarTags) ? data.calendarTags : defaultTags;
+        if (!tags.find((tag) => tag.id === 'note')) tags.push({ id: 'note', name: '備註', icon: '📌', color: 'amber' });
+
+        const ledgerTypes = Array.isArray(data.ledgerTypes) && data.ledgerTypes.length ? data.ledgerTypes : defaultLedgerTypes;
+        const ledger = Array.isArray(data.ledger) ? data.ledger.map((entry) => ({
+          id: entry.id || makeId(),
+          date: entry.date || toDateKey(new Date()),
+          type: entry.type || entry.category || ledgerTypes[0],
+          name: entry.name || entry.category || '未命名',
+          direction: entry.direction || 'expense',
+          amount: Number(entry.amount || 0),
+          expression: entry.expression || String(entry.amount || ''),
+          createdAt: entry.createdAt || new Date().toISOString(),
+        })) : [];
+
+        return { calendarTags: tags, dateTags, ledgerTypes, ledger };
+      }
+
+      function readJson(key) {
         try {
-          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-          if (saved && typeof saved === 'object') {
-            return {
-              memos: saved.memos && typeof saved.memos === 'object' ? saved.memos : {},
-              ledger: Array.isArray(saved.ledger) ? saved.ledger : [],
-            };
-          }
+          const saved = localStorage.getItem(key);
+          return saved ? JSON.parse(saved) : null;
         } catch (error) {
           console.warn('Local data could not be parsed.', error);
+          return null;
         }
-        return { memos: {}, ledger: [] };
       }
 
       function persist() {
@@ -407,9 +577,12 @@
 
       function renderAll() {
         renderCalendar();
-        renderRecentMemos();
+        renderRecentDateTags();
+        renderCategoryButtons();
+        renderMoneyMode();
         renderLedger();
         renderSettings();
+        renderStatsPreview();
       }
 
       function renderCalendar() {
@@ -424,12 +597,8 @@
         els.calendarMonthLabel.textContent = monthFormatter.format(viewDate);
         els.calendarGrid.innerHTML = '';
 
-        for (let i = firstDay - 1; i >= 0; i--) {
-          cells.push({ day: prevDays - i, muted: true, date: new Date(year, month - 1, prevDays - i) });
-        }
-        for (let day = 1; day <= daysInMonth; day++) {
-          cells.push({ day, muted: false, date: new Date(year, month, day) });
-        }
+        for (let i = firstDay - 1; i >= 0; i--) cells.push({ day: prevDays - i, muted: true, date: new Date(year, month - 1, prevDays - i) });
+        for (let day = 1; day <= daysInMonth; day++) cells.push({ day, muted: false, date: new Date(year, month, day) });
         while (cells.length % 7 !== 0 || cells.length < 42) {
           const day = cells.length - firstDay - daysInMonth + 1;
           cells.push({ day, muted: true, date: new Date(year, month + 1, day) });
@@ -437,86 +606,154 @@
 
         cells.forEach((cell) => {
           const key = toDateKey(cell.date);
-          const hasMemo = Boolean(state.memos[key]);
+          const record = normalizeDateRecord(state.dateTags[key]);
+          const tags = record.tagIds.map(findTag).filter(Boolean).slice(0, 3);
           const isToday = key === todayKey;
           const button = document.createElement('button');
           button.type = 'button';
           button.className = [
-            'app-button relative flex aspect-square min-h-11 flex-col items-center justify-center rounded-2xl border text-sm font-bold',
-            isToday ? 'border-teal-300/70 bg-teal-300/20 text-teal-50 shadow-glow' : 'border-white/5 bg-white/6 text-slate-100',
+            'app-button relative flex aspect-square min-h-12 flex-col items-center justify-center rounded-2xl border text-sm font-bold',
+            isToday ? 'border-teal-300/70 bg-teal-300/20 text-teal-50 shadow-teal' : 'border-white/5 bg-white/10 text-slate-100',
             cell.muted ? 'opacity-35' : '',
           ].join(' ');
-          button.innerHTML = `<span>${cell.day}</span>${hasMemo ? '<span class="absolute bottom-2 h-1.5 w-1.5 rounded-full bg-violet-400"></span>' : ''}`;
-          button.addEventListener('click', () => openMemoModal(key));
+          button.innerHTML = `
+            <span>${cell.day}</span>
+            <span class="absolute bottom-1.5 left-1/2 flex -translate-x-1/2 gap-0.5 text-[10px] leading-none">${tags.map((tag) => `<span>${tag.icon}</span>`).join('')}</span>
+          `;
+          button.addEventListener('click', () => openDateTagModal(key));
           els.calendarGrid.appendChild(button);
         });
       }
 
-      function openMemoModal(dateKey) {
-        selectedMemoDate = dateKey;
-        els.memoModalTitle.textContent = dateKey;
-        els.memoText.value = state.memos[dateKey] || '';
-        els.memoModal.classList.remove('modal-hidden');
-        setTimeout(() => els.memoText.focus(), 120);
+      function openDateTagModal(dateKey) {
+        selectedDateKey = dateKey;
+        const record = normalizeDateRecord(state.dateTags[dateKey]);
+        draftDateTags = new Set(record.tagIds);
+        els.dateNote.value = record.note || '';
+        els.dateTagTitle.textContent = dateKey;
+        renderDateTagPicker();
+        openModal('dateTagModal');
       }
 
-      function closeMemoModal() {
-        els.memoModal.classList.add('modal-hidden');
-        els.memoText.blur();
+      function renderDateTagPicker() {
+        els.dateTagPicker.innerHTML = state.calendarTags.map((tag) => {
+          const active = draftDateTags.has(tag.id);
+          return `
+            <button type="button" data-tag-id="${tag.id}" class="tag-choice app-button min-h-14 rounded-2xl border px-3 text-left ${active ? 'border-violet-300/50 bg-violet-500 text-white shadow-glow' : 'border-white/10 bg-white/10 text-slate-200'}">
+              <span class="mr-2 text-lg">${tag.icon}</span><span class="text-sm font-bold">${escapeHtml(tag.name)}</span>
+            </button>
+          `;
+        }).join('');
+        els.dateTagPicker.querySelectorAll('.tag-choice').forEach((button) => {
+          button.addEventListener('click', () => {
+            const id = button.dataset.tagId;
+            draftDateTags.has(id) ? draftDateTags.delete(id) : draftDateTags.add(id);
+            renderDateTagPicker();
+          });
+        });
       }
 
-      function saveMemo() {
-        const text = els.memoText.value.trim();
-        if (text) {
-          state.memos[selectedMemoDate] = text;
-          showToast('已儲存日期標記');
+      function saveDateTags() {
+        const tagIds = [...draftDateTags];
+        const note = els.dateNote.value.trim();
+        if (tagIds.length || note) {
+          state.dateTags[selectedDateKey] = { tagIds, note };
         } else {
-          delete state.memos[selectedMemoDate];
-          showToast('已清空日期標記');
+          delete state.dateTags[selectedDateKey];
         }
         persist();
-        closeMemoModal();
+        closeModal('dateTagModal');
         renderAll();
+        showToast('日期內容已更新');
       }
 
-      function deleteMemo() {
-        delete state.memos[selectedMemoDate];
+      function renderTagManager() {
+        els.tagManagerList.innerHTML = state.calendarTags.map((tag) => `
+          <div class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 p-2">
+            <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950/45 text-xl">${tag.icon}</span>
+            <input data-edit-tag="${tag.id}" value="${escapeAttribute(tag.name)}" class="min-w-0 flex-1 rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-sm font-bold text-white outline-none focus:border-violet-300/50" />
+            <button data-delete-tag="${tag.id}" class="app-button h-11 rounded-xl bg-rose-500/15 px-3 text-xs font-bold text-rose-100">刪除</button>
+          </div>
+        `).join('');
+
+        els.tagManagerList.querySelectorAll('[data-edit-tag]').forEach((input) => {
+          input.addEventListener('change', () => {
+            const tag = findTag(input.dataset.editTag);
+            if (tag && input.value.trim()) {
+              tag.name = input.value.trim();
+              persist();
+              renderAll();
+            }
+          });
+        });
+        els.tagManagerList.querySelectorAll('[data-delete-tag]').forEach((button) => {
+          button.addEventListener('click', () => deleteCalendarTag(button.dataset.deleteTag));
+        });
+      }
+
+      function addCalendarTag() {
+        const name = els.newTagName.value.trim();
+        if (!name) {
+          showToast('請輸入標籤名稱');
+          return;
+        }
+        state.calendarTags.push({ id: makeId(), name, icon: els.newTagIcon.value, color: 'violet' });
+        els.newTagName.value = '';
         persist();
-        closeMemoModal();
+        renderTagManager();
         renderAll();
-        showToast('標記已刪除');
+        showToast('標籤已新增');
       }
 
-      function renderRecentMemos() {
-        const entries = Object.entries(state.memos)
-          .filter(([, text]) => text)
+      function deleteCalendarTag(tagId) {
+        state.calendarTags = state.calendarTags.filter((tag) => tag.id !== tagId);
+        Object.keys(state.dateTags).forEach((date) => {
+          const record = normalizeDateRecord(state.dateTags[date]);
+          record.tagIds = record.tagIds.filter((id) => id !== tagId);
+          if (record.tagIds.length || record.note) state.dateTags[date] = record;
+          else delete state.dateTags[date];
+        });
+        persist();
+        renderTagManager();
+        renderAll();
+        showToast('標籤已刪除');
+      }
+
+      function renderRecentDateTags() {
+        const entries = Object.entries(state.dateTags)
+          .map(([date, record]) => [date, normalizeDateRecord(record)])
+          .filter(([, record]) => record.tagIds.length || record.note)
           .sort(([a], [b]) => b.localeCompare(a))
-          .slice(0, 3);
-
-        els.memoCountBadge.textContent = `${Object.keys(state.memos).filter((key) => state.memos[key]).length} 筆`;
-        els.recentMemos.innerHTML = entries.length
-          ? entries.map(([date, text]) => `
-            <button class="app-button w-full rounded-2xl border border-white/10 bg-white/6 p-3 text-left" data-memo-date="${date}">
-              <span class="block text-xs font-bold text-violet-200">${date}</span>
-              <span class="mt-1 line-clamp-2 block text-sm leading-5 text-slate-200">${escapeHtml(text)}</span>
-            </button>
-          `).join('')
-          : '<p class="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-slate-500">還沒有標記，點日曆上的日期開始。</p>';
-
-        els.recentMemos.querySelectorAll('[data-memo-date]').forEach((button) => {
-          button.addEventListener('click', () => openMemoModal(button.dataset.memoDate));
+          .slice(0, 4);
+        const count = countTaggedDates();
+        els.dateTagCountBadge.textContent = `${count} 天`;
+        els.recentDateTags.innerHTML = entries.length
+          ? entries.map(([date, record]) => {
+              const tags = record.tagIds.map(findTag).filter(Boolean);
+              return `
+                <button class="app-button w-full rounded-2xl border border-white/10 bg-white/10 p-3 text-left" data-date-open="${date}">
+                  <span class="block text-xs font-bold text-violet-200">${date}</span>
+                  <span class="mt-1 flex flex-wrap gap-1">${tags.map((tag) => `<span class="rounded-full bg-slate-950/45 px-2 py-1 text-xs font-bold">${tag.icon} ${escapeHtml(tag.name)}</span>`).join('')}</span>
+                  ${record.note ? `<span class="mt-2 block max-h-10 overflow-hidden text-sm text-slate-300">${escapeHtml(record.note)}</span>` : ''}
+                </button>
+              `;
+            }).join('')
+          : '<p class="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-slate-500">還沒有日期標籤，點日曆上的日期開始。</p>';
+        els.recentDateTags.querySelectorAll('[data-date-open]').forEach((button) => {
+          button.addEventListener('click', () => openDateTagModal(button.dataset.dateOpen));
         });
       }
 
       function renderCategoryButtons() {
-        els.categoryGrid.innerHTML = categories.map((category) => `
-          <button type="button" data-category="${category}" class="category-btn app-button min-h-12 rounded-2xl border px-2 text-sm font-bold"></button>
+        if (!state.ledgerTypes.includes(selectedType)) selectedType = state.ledgerTypes[0] || defaultLedgerTypes[0];
+        els.categoryGrid.innerHTML = state.ledgerTypes.map((type) => `
+          <button type="button" data-type="${escapeAttribute(type)}" class="category-btn app-button min-h-12 rounded-2xl border px-2 text-sm font-bold"></button>
         `).join('');
 
         els.categoryGrid.querySelectorAll('.category-btn').forEach((button) => {
-          button.textContent = button.dataset.category;
+          button.textContent = button.dataset.type;
           button.addEventListener('click', () => {
-            selectedCategory = button.dataset.category;
+            selectedType = button.dataset.type;
             updateCategoryButtons();
           });
         });
@@ -525,17 +762,89 @@
 
       function updateCategoryButtons() {
         els.categoryGrid.querySelectorAll('.category-btn').forEach((button) => {
-          const active = button.dataset.category === selectedCategory;
+          const active = button.dataset.type === selectedType;
           button.className = [
             'category-btn app-button min-h-12 rounded-2xl border px-2 text-sm font-bold',
-            active ? 'border-violet-300/50 bg-violet-500 text-white shadow-glow' : 'border-white/10 bg-white/8 text-slate-300',
+            active ? 'border-violet-300/50 bg-violet-500 text-white shadow-glow' : 'border-white/10 bg-white/10 text-slate-300',
           ].join(' ');
         });
+      }
+
+      function renderMoneyMode() {
+        document.querySelectorAll('.money-mode').forEach((button) => {
+          const active = button.dataset.mode === moneyMode;
+          button.className = [
+            'money-mode app-button min-h-11 rounded-[1rem] text-sm font-black',
+            active ? (moneyMode === 'income' ? 'bg-teal-400 text-slate-950' : 'bg-violet-500 text-white') : 'text-slate-400',
+          ].join(' ');
+        });
+      }
+
+      function renderTypeManager() {
+        els.typeManagerList.innerHTML = state.ledgerTypes.map((type) => `
+          <div class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/10 p-2">
+            <input data-edit-type="${escapeAttribute(type)}" value="${escapeAttribute(type)}" class="min-w-0 flex-1 rounded-xl border border-white/10 bg-slate-950/45 px-3 py-2 text-sm font-bold text-white outline-none focus:border-teal-300/50" />
+            <button data-delete-type="${escapeAttribute(type)}" class="app-button h-11 rounded-xl bg-rose-500/15 px-3 text-xs font-bold text-rose-100">刪除</button>
+          </div>
+        `).join('');
+
+        els.typeManagerList.querySelectorAll('[data-edit-type]').forEach((input) => {
+          input.addEventListener('change', () => renameLedgerType(input.dataset.editType, input.value.trim()));
+        });
+        els.typeManagerList.querySelectorAll('[data-delete-type]').forEach((button) => {
+          button.addEventListener('click', () => deleteLedgerType(button.dataset.deleteType));
+        });
+      }
+
+      function addLedgerType() {
+        const name = els.newTypeName.value.trim();
+        if (!name) {
+          showToast('請輸入類型名稱');
+          return;
+        }
+        if (!state.ledgerTypes.includes(name)) state.ledgerTypes.push(name);
+        selectedType = name;
+        els.newTypeName.value = '';
+        persist();
+        renderTypeManager();
+        renderCategoryButtons();
+        showToast('類型已新增');
+      }
+
+      function renameLedgerType(oldName, newName) {
+        if (!newName) return renderTypeManager();
+        state.ledgerTypes = state.ledgerTypes.map((type) => type === oldName ? newName : type);
+        state.ledger.forEach((entry) => {
+          if (entry.type === oldName) entry.type = newName;
+        });
+        if (selectedType === oldName) selectedType = newName;
+        persist();
+        renderAll();
+        renderTypeManager();
+        showToast('類型已更新');
+      }
+
+      function deleteLedgerType(type) {
+        if (state.ledgerTypes.length <= 1) {
+          showToast('至少保留一個類型');
+          return;
+        }
+        state.ledgerTypes = state.ledgerTypes.filter((item) => item !== type);
+        const fallback = state.ledgerTypes[0];
+        state.ledger.forEach((entry) => {
+          if (entry.type === type) entry.type = fallback;
+        });
+        if (selectedType === type) selectedType = fallback;
+        persist();
+        renderAll();
+        renderTypeManager();
+        showToast('類型已刪除');
       }
 
       function pressCalcKey(key) {
         if (key === 'C') {
           calcExpression = '';
+          if (editingLedgerId) resetLedgerForm();
         } else if (key === 'back') {
           calcExpression = calcExpression.slice(0, -1);
         } else if (key === '=') {
@@ -571,48 +880,185 @@
           return;
         }
 
-        state.ledger.unshift({
-          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+        const payload = {
           date: els.ledgerDate.value || toDateKey(new Date()),
-          category: selectedCategory,
+          type: selectedType,
+          name: els.ledgerName.value.trim() || selectedType,
+          direction: moneyMode,
           amount: Math.round(amount * 100) / 100,
           expression: calcExpression,
-          createdAt: new Date().toISOString(),
-        });
-        calcExpression = '';
-        updateCalcDisplay();
+        };
+
+        if (editingLedgerId) {
+          const entry = state.ledger.find((item) => item.id === editingLedgerId);
+          if (entry) Object.assign(entry, payload);
+          showToast('記帳已更新');
+        } else {
+          state.ledger.unshift({ id: makeId(), ...payload, createdAt: new Date().toISOString() });
+          showToast('金額已存入');
+        }
+
+        resetLedgerForm();
         persist();
         renderLedger();
         renderSettings();
-        showToast('金額已存入');
+        renderStatsPreview();
+      }
+
+      function editLedgerEntry(id) {
+        const entry = state.ledger.find((item) => item.id === id);
+        if (!entry) return;
+        editingLedgerId = id;
+        moneyMode = entry.direction || 'expense';
+        selectedType = entry.type;
+        calcExpression = entry.expression || trimNumber(entry.amount);
+        els.ledgerDate.value = entry.date;
+        els.ledgerName.value = entry.name || entry.type;
+        els.saveLedgerBtn.innerHTML = '更新<br>資料';
+        els.editHint.classList.remove('hidden');
+        renderMoneyMode();
+        renderCategoryButtons();
+        updateCalcDisplay();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function deleteLedgerEntry(id) {
+        state.ledger = state.ledger.filter((entry) => entry.id !== id);
+        if (editingLedgerId === id) resetLedgerForm();
+        persist();
+        renderLedger();
+        renderSettings();
+        renderStatsPreview();
+        showToast('記帳已刪除');
+      }
+
+      function resetLedgerForm() {
+        editingLedgerId = null;
+        calcExpression = '';
+        els.ledgerName.value = '';
+        els.saveLedgerBtn.innerHTML = '確認<br>存入';
+        els.editHint.classList.add('hidden');
+        updateCalcDisplay();
       }
 
       function renderLedger() {
-        const total = state.ledger.reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
-        const recent = state.ledger.slice(0, 5);
-        els.ledgerTotalBadge.textContent = `$${formatMoney(total)}`;
-        els.recentLedger.innerHTML = recent.length
-          ? recent.map((entry) => `
-            <div class="flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/6 p-3">
-              <div class="min-w-0">
-                <p class="truncate text-sm font-bold text-white">${escapeHtml(entry.category)}</p>
-                <p class="mt-1 text-xs text-slate-500">${escapeHtml(entry.date)}</p>
-              </div>
-              <p class="shrink-0 text-base font-black text-teal-100">$${formatMoney(entry.amount)}</p>
-            </div>
-          `).join('')
+        const totals = summarizeLedger();
+        els.ledgerTotalBadge.textContent = `支出 $${formatMoney(totals.expense)}`;
+        els.ledgerList.innerHTML = state.ledger.length
+          ? state.ledger.map((entry) => {
+              const isIncome = entry.direction === 'income';
+              return `
+                <div class="rounded-2xl border border-white/10 bg-white/10 p-3">
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="truncate text-sm font-bold text-white">${escapeHtml(entry.name || entry.type)}</p>
+                      <p class="mt-1 text-xs text-slate-500">${escapeHtml(entry.date)} · ${escapeHtml(entry.type)}</p>
+                    </div>
+                    <p class="shrink-0 text-base font-black ${isIncome ? 'text-teal-100' : 'text-violet-100'}">${isIncome ? '+' : '-'}$${formatMoney(entry.amount)}</p>
+                  </div>
+                  <div class="mt-3 grid grid-cols-2 gap-2">
+                    <button data-edit-ledger="${entry.id}" class="app-button min-h-10 rounded-xl bg-slate-700/80 text-sm font-bold text-slate-100">編輯</button>
+                    <button data-delete-ledger="${entry.id}" class="app-button min-h-10 rounded-xl bg-rose-500/15 text-sm font-bold text-rose-100">刪除</button>
+                  </div>
+                </div>
+              `;
+            }).join('')
           : '<p class="rounded-2xl border border-dashed border-white/10 p-4 text-sm text-slate-500">還沒有記帳資料。</p>';
+
+        els.ledgerList.querySelectorAll('[data-edit-ledger]').forEach((button) => {
+          button.addEventListener('click', () => editLedgerEntry(button.dataset.editLedger));
+        });
+        els.ledgerList.querySelectorAll('[data-delete-ledger]').forEach((button) => {
+          button.addEventListener('click', () => deleteLedgerEntry(button.dataset.deleteLedger));
+        });
+      }
+
+      function summarizeLedger() {
+        return state.ledger.reduce((sum, entry) => {
+          const key = entry.direction === 'income' ? 'income' : 'expense';
+          sum[key] += Number(entry.amount || 0);
+          return sum;
+        }, { income: 0, expense: 0 });
+      }
+
+      function renderStatsPreview() {
+        const totals = summarizeLedger();
+        els.statsPreview.textContent = `支出 $${formatMoney(totals.expense)} · 收入 $${formatMoney(totals.income)}`;
+      }
+
+      function renderStats() {
+        const expenseEntries = state.ledger.filter((entry) => entry.direction !== 'income');
+        const incomeEntries = state.ledger.filter((entry) => entry.direction === 'income');
+        const currentYear = String(new Date().getFullYear());
+        const currentMonth = toDateKey(new Date()).slice(0, 7);
+        const currentDay = toDateKey(new Date());
+        const totalExpense = sumEntries(expenseEntries);
+        const totalIncome = sumEntries(incomeEntries);
+
+        const cards = [
+          statCard('總支出', `$${formatMoney(totalExpense)}`, 'text-violet-100'),
+          statCard('總收入', `$${formatMoney(totalIncome)}`, 'text-teal-100'),
+          statCard('今年平均月支出', `$${formatMoney(avgByPeriod(expenseEntries.filter((e) => e.date.startsWith(currentYear)), 'month'))}`, 'text-white'),
+          statCard('本月平均日支出', `$${formatMoney(avgByPeriod(expenseEntries.filter((e) => e.date.startsWith(currentMonth)), 'day'))}`, 'text-white'),
+          statCard('今日支出', `$${formatMoney(sumEntries(expenseEntries.filter((e) => e.date === currentDay)))}`, 'text-white'),
+          statCard('今日收入', `$${formatMoney(sumEntries(incomeEntries.filter((e) => e.date === currentDay)))}`, 'text-white'),
+        ];
+
+        const byType = groupByType(expenseEntries).slice(0, 6);
+        els.statsContent.innerHTML = `
+          <div class="grid grid-cols-2 gap-3">${cards.join('')}</div>
+          <div class="rounded-2xl border border-white/10 bg-white/10 p-4">
+            <p class="mb-3 text-sm font-bold text-white">支出類型排行</p>
+            ${byType.length ? byType.map((item) => `
+              <div class="mb-2 flex items-center justify-between gap-3 text-sm last:mb-0">
+                <span class="truncate text-slate-300">${escapeHtml(item.type)}</span>
+                <span class="font-black text-violet-100">$${formatMoney(item.amount)}</span>
+              </div>
+            `).join('') : '<p class="text-sm text-slate-500">還沒有支出資料。</p>'}
+          </div>
+        `;
+      }
+
+      function statCard(label, value, colorClass) {
+        return `
+          <div class="rounded-2xl border border-white/10 bg-white/10 p-4">
+            <p class="text-xs font-semibold text-slate-400">${label}</p>
+            <p class="mt-2 break-words text-xl font-black ${colorClass}">${value}</p>
+          </div>
+        `;
+      }
+
+      function avgByPeriod(entries, period) {
+        const buckets = new Map();
+        entries.forEach((entry) => {
+          const key = period === 'month' ? entry.date.slice(0, 7) : entry.date;
+          buckets.set(key, (buckets.get(key) || 0) + Number(entry.amount || 0));
+        });
+        if (!buckets.size) return 0;
+        return [...buckets.values()].reduce((sum, value) => sum + value, 0) / buckets.size;
+      }
+
+      function groupByType(entries) {
+        const groups = new Map();
+        entries.forEach((entry) => {
+          groups.set(entry.type, (groups.get(entry.type) || 0) + Number(entry.amount || 0));
+        });
+        return [...groups.entries()].map(([type, amount]) => ({ type, amount })).sort((a, b) => b.amount - a.amount);
+      }
+
+      function sumEntries(entries) {
+        return entries.reduce((sum, entry) => sum + Number(entry.amount || 0), 0);
       }
 
       function renderSettings() {
-        els.settingsMemoCount.textContent = Object.keys(state.memos).filter((key) => state.memos[key]).length;
+        els.settingsDateTagCount.textContent = countTaggedDates();
         els.settingsLedgerCount.textContent = state.ledger.length;
       }
 
       function exportBackup() {
         const payload = {
           app: 'life-dashboard',
-          version: 1,
+          version: 2,
           exportedAt: new Date().toISOString(),
           data: state,
         };
@@ -636,15 +1082,9 @@
         reader.onload = () => {
           try {
             const parsed = JSON.parse(reader.result);
-            const data = parsed.data || parsed;
-            if (!data || typeof data !== 'object' || !data.memos || !Array.isArray(data.ledger)) {
-              throw new Error('Invalid backup shape');
-            }
-            state = {
-              memos: data.memos && typeof data.memos === 'object' ? data.memos : {},
-              ledger: data.ledger,
-            };
+            state = normalizeState(parsed);
             persist();
+            resetLedgerForm();
             renderAll();
             showToast('匯入完成');
           } catch (error) {
@@ -665,7 +1105,7 @@
           const active = button.dataset.tab === tabId;
           button.className = [
             'nav-btn app-button min-h-14 rounded-[1.15rem]',
-            active ? 'bg-white/12 text-violet-100' : 'text-slate-400',
+            active ? 'bg-white/10 text-violet-100' : 'text-slate-400',
           ].join(' ');
         });
       }
@@ -698,14 +1138,12 @@
 
         if ('serviceWorker' in navigator) {
           const swCode = `
-            const CACHE = 'life-dashboard-shell-v1';
+            const CACHE = 'life-dashboard-shell-v2';
             self.addEventListener('install', event => {
               event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(['./'])));
               self.skipWaiting();
             });
-            self.addEventListener('activate', event => {
-              event.waitUntil(self.clients.claim());
-            });
+            self.addEventListener('activate', event => event.waitUntil(self.clients.claim()));
             self.addEventListener('fetch', event => {
               event.respondWith(
                 caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
@@ -735,11 +1173,40 @@
         return `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
       }
 
+      function openModal(id) {
+        document.querySelector(`#${id}`).classList.remove('modal-hidden');
+      }
+
+      function closeModal(id) {
+        document.querySelector(`#${id}`).classList.add('modal-hidden');
+      }
+
+      function normalizeDateRecord(record) {
+        if (!record) return { tagIds: [], note: '' };
+        if (Array.isArray(record)) return { tagIds: record, note: '' };
+        return {
+          tagIds: Array.isArray(record.tagIds) ? record.tagIds : [],
+          note: record.note || '',
+        };
+      }
+
+      function findTag(id) {
+        return state.calendarTags.find((tag) => tag.id === id);
+      }
+
+      function countTaggedDates() {
+        return Object.values(state.dateTags).map(normalizeDateRecord).filter((record) => record.tagIds.length || record.note).length;
+      }
+
       function toDateKey(date) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
+      }
+
+      function makeId() {
+        return crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
       }
 
       function trimNumber(value) {
@@ -760,6 +1227,10 @@
           .replaceAll('>', '&gt;')
           .replaceAll('"', '&quot;')
           .replaceAll("'", '&#039;');
+      }
+
+      function escapeAttribute(value) {
+        return escapeHtml(value).replaceAll('`', '&#096;');
       }
 
       let toastTimer;
